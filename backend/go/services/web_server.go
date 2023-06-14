@@ -2,11 +2,11 @@ package services
 
 import (
 	"context"
+	"db-webhooks/go/pkg/util"
 	"errors"
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"inquery/go/pkg/util"
 	"net/http"
 	"os"
 	"strings"
@@ -16,7 +16,7 @@ import (
 const (
 	httpServerReadTimeout         = 30 * time.Second
 	httpServerWriteTimeout        = 30 * time.Second
-	httpDefaultAuthorizationToken = "inquery"
+	httpDefaultAuthorizationToken = "db-webhooks"
 	httpDefaultServerPort         = "3003"
 	httpDefaultAllowOrigins       = "*"
 )

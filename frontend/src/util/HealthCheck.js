@@ -80,16 +80,6 @@ const CheckBEHealth = ({ children }) => {
                   {getAPIBaseURL() + "health"}
                 </a>
               </li>
-              <li>
-                Reach out for help over{" "}
-                <a
-                  target="_blank"
-                  href="https://join.slack.com/t/inqueryio/shared_invite/zt-1psu47idh-vnItf_BaWcIWih8flGZ0fw"
-                  rel="noreferrer"
-                >
-                  Slack
-                </a>
-              </li>
             </ul>
           </div>
           <hr />

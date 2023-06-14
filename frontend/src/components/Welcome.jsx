@@ -13,7 +13,7 @@ const Welcome = ({setLoading}) => {
         </div>
         <hr/>
         <div className="px-4">
-          <h4 className="f24 text-center pt-2 fw500">Welcome to Inquery!</h4>
+          <h4 className="f24 text-center pt-2 fw500">Welcome to DB Webhooks!</h4>
           <p className="color2 text-center pb-2 f16">
             Looks like everything's working. Let's connect to your database and
             start triggering actions.

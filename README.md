@@ -1,84 +1,63 @@
 <div align="center">
-<a href="https://inquery.io"><img src="https://svgshare.com/i/qxX.svg" alt="Inquery"></a>
-
-<em>Superpowers for your SQL database</em>
-
-[![Twitter](https://img.shields.io/twitter/url/https/twitter.com/inqueryio.svg?style=social&label=Follow%20%40inqueryio)](https://twitter.com/inqueryio)
-[![GitHub Repo stars](https://img.shields.io/github/stars/inqueryio/inquery?style=social)](https://github.com/inqueryio/inquery)
-
-<h3>
-    <a href="https://docs.inquery.io">Docs</a> |
-    <a href="https://join.slack.com/t/inqueryio/shared_invite/zt-1psu47idh-vnItf_BaWcIWih8flGZ0fw">Slack</a> |
-    <a href="https://inquery.io">Website</a> 
-</h3>
+<h1 align="center">🪝 DB Webhooks</h1> </h1>
+<em>Real-time events for Postgres</em>
 
 </div>
 
-## Inquery is an open-source toolkit for SQL databases, starting with PostgreSQL
-
-* **[Alerts](#alerts):** Receive notifications when a change occurs
-* **[Audit History](#audit-history-beta):** View all historical changes with context
-* **[Query Preview](#query-preview-coming-soon):** Preview affected rows and query plan prior to running changes
-* **[Approval Flow](#approval-flow-coming-soon):** Require query review before a change can be run
-* **[Branching](#):** Git-like version control
-* **[Instant Rollback](#):** Instantly rollback to any commit
-
-## Alerts
-
-Alerts can be used to send notifications when a database change is made (INSERT, UPDATE, DELETE).
-
-* Send notifications to Slack, email, or any other webhook
-* Filter-out changes made by application users to only see manual updates
-* Use template strings (column values, user, etc.) to see what was changed and by who
+DB Webhooks is a utility for Postgres that triggers webhooks when rows are inserted, updated, or deleted. It uses
+database triggers that send low-latency websocket messages to a Go application. This application then calls
+the configured webhook(s) with a JSON payload that includes specified values from the database row.
 
 ### How It Works
 
 1. Data is modified in a Postgres table (INSERT, UPDATE, DELETE)
-2. A Postgres trigger notifies the Inquery web server via a websocket message
-3. Inquery formats, filters, and sends the data to configured webhook(s)
+2. A Postgres trigger notifies the DB Webhooks web server via a websocket message
+3. DB Webhooks formats, filters, and sends the data to configured webhook(s)
 
-![Inquery Create Slack Notification](https://i.imgur.com/1xoorz9.gif)
-
-## Audit History (beta)
-
-View all manual data updates that occurred in your Postgres database, even those that weren't initiated through the
-Inquery UI.
-
-## Query Preview (coming soon)
-
-Before executing a query, check which tables and rows will be affected. View exactly which columns will be updated and
-their new value. Explore the visual query plan generated from EXPLAIN.
-
-## Approval Flow (coming soon)
-
-Submit a query for approval by teammates instead of running them directly against the production database. Auto-approval
-rules can be configured based on the number of rows changed, the table being updated, or the user's role.
-
-![Inquery Approval Flow Mockup](https://i.imgur.com/5I3Nl6p.png)
+![DB Webhooks Create Slack Notification](https://i.imgur.com/1xoorz9.gif)
 
 ## Get Started
 
-### Run Inquery locally
+### Run DB Webhooks locally
 
-You can run Inquery locally with Docker.
+You can run DB Webhooks locally with Docker.
 
 ```bash
-git clone --depth 1 https://github.com/inqueryio/inquery.git
-cd inquery
+git clone --depth 1 https://github.com/tableflowhq/db-webhooks.git
+cd db-webhooks
 docker-compose up -d
 ```
 
-Then open [http://localhost:3000](http://localhost:3000) to access Inquery.
+Then open [http://localhost:3000](http://localhost:3000) to access DB Webhooks.
 <br>
 <br>
 **Note**: When connecting your database, if your Postgres host is `localhost`, you must use `host.docker.internal`
 instead to access it when running with Docker.
 
-### Run Inquery on AWS (EC2)
+### Run DB Webhooks on AWS (EC2)
 
 **Note**: Make sure this instance is only accessible within your VPC.\
-**Note**: Make sure your local machine is able to connect to the server on port 3000 (the web server) and 3003 (the API server) over HTTP.\
+**Note**: Make sure your local machine is able to connect to the server on port 3000 (the web server) and 3003 (the API
+server) over HTTP.\
 **Note**: These instructions are for Amazon Linux 2 AMI (HVM).
+
+#### Option 1 (one-line install)
+
+```bash
+sudo yum update -y && \
+sudo yum install -y docker && \
+sudo service docker start && \
+sudo usermod -a -G docker $USER && \
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.16.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
+sudo mv /usr/local/bin/docker-compose /usr/bin/docker-compose && \
+sudo chmod +x /usr/bin/docker-compose && \
+mkdir db-webhooks && cd db-webhooks && \
+wget https://raw.githubusercontent.com/tableflowhq/db-webhooks/main/{.env,docker-compose.yml,.dockerignore,frontend.env} && \
+sg docker -c 'docker-compose up -d'
+
+```
+
+#### Option 2 (guided install)
 
 1. To install Docker, run the following command in your SSH session on the instance terminal:
 
@@ -99,19 +78,71 @@ sudo chmod +x /usr/bin/docker-compose
 docker-compose version
 ```
 
-3. Install and run Inquery
+3. Install and run DB Webhooks
 
 ```bash
-mkdir inquery && cd inquery
-wget https://raw.githubusercontent.com/inqueryio/inquery/main/{.env,docker-compose.yml,.dockerignore,frontend.env}
+mkdir db-webhooks && cd db-webhooks
+wget https://raw.githubusercontent.com/tableflowhq/db-webhooks/main/{.env,docker-compose.yml,.dockerignore,frontend.env}
 docker-compose up -d
 ```
 
-### Run Inquery Cloud (Beta)
+## Features
 
-Sign up for [Inquery Cloud](https://www.inquery.io/sign-up) early access and get a managed, cloud-hosted instance.
+### Template Strings
 
+Embed variables from database rows in your actions
+When adding an action, you can insert data from the row into the response body of the POST request by using template
+strings.
 
-## Get In Touch
-Let us know your feedback or feature requests! You can submit a GitHub issue or contact us
-at [hey@inquery.io](mailto:hey@inquery.io).
+For instance, if your table has a column called `email`, you would put the value `${email}` in the request
+body: `{"text":"User created: ${email}!"}`
+
+The prefixes `new.` and `old.` can be used if a new (INSERT, UPDATE) or old (UPDATE, DELETE) row is available. If a
+prefix is not specified, the new or old values will be used depending on the event.
+Example: `{"text":"User updated: ${old.email} is now ${new.email}!"}`
+
+Meta values can also be used to get more query information. The following are available:
+
+1. `meta.table` (table name)
+2. `meta.schema` (schema name)
+3. `meta.event` (INSERT, UPDATE, or DELETE)
+4. `meta.user` (the Postgres user who ran the query that triggered the trigger)
+5. `meta.event_summary` (a formatted summary of the user, table, and event)
+6. `meta.changed` (the values changed for an UPDATE)
+
+## Postgres Configuration
+
+### Create a Postgres User
+
+When setting up your database in DB Webhooks, you'll need a Postgres user to connect to the database. You can either use
+an existing user or create a new one. This guide shows how to create a new Postgres user with the correct permissions
+needed for DB Webhooks.
+
+If you're using an existing user, make sure the user has the `create` permission on the schema(s) you want to use.
+
+**Note:** If you want DB Webhooks to also clean up the triggers and functions it creates when all actions are removed on
+a table, the user needs to be an owner as Postgres does not have a "drop" permission.
+
+### Why is the `create` Permission Needed?
+
+DB Webhooks uses the create permission to create triggers and functions. A trigger (and corresponding function) is
+created whenever a new action on a table is added which doesn't have the DB Webhooks trigger already.
+
+DB Webhooks will delete the trigger and function it created if the last action on a table is removed, so it doesn't
+leave any extra triggers on your database.
+
+You can see how the trigger works by looking at its implementation in `util.go`.
+
+#### 1. Create the User
+
+```sql
+create user db_webhooks with encrypted password 'XXXXXXXXXXXXXXX';
+```
+
+#### 2. Grant Create Access
+
+```sql
+grant create on schema public to db_webhooks;
+-- If you have tables in a schema other than `public`, add the schema here
+grant create on schema your_other_schema_if_needed to db_webhooks;
+```

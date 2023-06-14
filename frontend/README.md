@@ -1,4 +1,4 @@
-# Inquery Frontend
+# DB Webhooks Frontend
 
 ## Available Scripts
 

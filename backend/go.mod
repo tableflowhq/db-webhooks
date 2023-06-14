@@ -1,4 +1,4 @@
-module inquery
+module db-webhooks
 
 go 1.19
 

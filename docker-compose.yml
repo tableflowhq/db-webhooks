@@ -8,7 +8,7 @@ services:
   # ports:
   #   - "5432:5432"
   # networks:
-  #   - inquery
+  #   - db-webhooks
   # environment:
   #   - POSTGRES_PASSWORD=postgres
   backend:
@@ -24,9 +24,9 @@ services:
     ports:
       - "3003:3003"
     networks:
-      - inquery
+      - db-webhooks
     volumes:
-      - inquery:/tmp/badger
+      - db-webhooks:/tmp/badger
     environment:
       - DISK_DB_ENCRYPTION_KEY=${DISK_DB_ENCRYPTION_KEY}
       - DISK_DB_LOCATION=/tmp/badger
@@ -43,10 +43,10 @@ services:
     ports:
       - "3000:80"
     networks:
-      - inquery
+      - db-webhooks
     volumes:
       - ${PWD}/frontend.env:/usr/share/nginx/html/.env
 volumes:
-  inquery:
+  db-webhooks:
 networks:
-  inquery:
+  db-webhooks:
