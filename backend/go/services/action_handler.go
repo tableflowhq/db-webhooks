@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"db-webhooks/go/pkg/db"
 	"db-webhooks/go/pkg/util"
 	"encoding/json"
@@ -197,7 +198,24 @@ func mergeColumnTemplateValues(payload NotifyPayload) map[string]interface{} {
 
 func triggerActionHTTPPOST(action TriggerAction, templateValues map[string]interface{}) {
 	postRequestBody := util.FillTemplateValues(action.Action.Body, templateValues)
-	resp, err := http.Post(action.Action.URL, "application/json", bytes.NewBuffer([]byte(postRequestBody)))
+
+	// Create HTTP client that accepts self-signed certificates
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+
+	req, err := http.NewRequest("POST", action.Action.URL, bytes.NewBuffer([]byte(postRequestBody)))
+	if err != nil {
+		util.Log.Errorw("An error occurred creating trigger action POST request",
+			"url", action.Action.URL,
+			"error", err,
+		)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
 	if err != nil {
 		util.Log.Errorw("An error occurred making a trigger action POST request",
 			"url", action.Action.URL,
